@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react'
+import { useParams } from "react-router-dom";
+const axios = require('axios').default;
+
 
 const GameAdd = () => {
+    const { id } = useParams();
+
     const [fields, setFields] = useState({
         rows: "", cols: ""
     })
@@ -34,7 +39,15 @@ const GameAdd = () => {
         setDivs(() => temp)
     }
     useEffect(() => {
-        setDivs([])
+        axios.get(`http://localhost:4554/api/item/${id}`)
+            .then(result => {
+                console.log(result)
+                setFields(result.data.fields)
+                setDivs(result.data.divs)
+            })
+            .catch(err => console.log(err))
+    }, [])
+    useEffect(() => {
         for (let i = 0; i < fields.rows; i++) {
             for (let j = 0; j < fields.cols; j++) {
                 setDivs(prev =>
@@ -48,6 +61,20 @@ const GameAdd = () => {
             }
         }
     }, [fields]);
+    const handleSave = () => {
+        const data = {
+            fields,
+            divs
+        }
+        axios.put(`http://localhost:4554/api/item/${id}`, data)
+            .then(result => {
+                console.log(result);
+            })
+            .catch(err => console.log(err))
+    }
+    const handleSaveExit = () => { }
+    const handleDelete = () => { }
+
     return (
         <>
             <label htmlFor="cols">Colums</label>
@@ -69,6 +96,9 @@ const GameAdd = () => {
                     onClick={({ target }) => handleActive(target)}></div>)}
                 {/* {divs.map(ele => <div style={{ background: `#333` }}>Col: {ele.col}, Row: {ele.row}</div>)} */}
             </main>
+            <button onClick={handleSave}>Save</button>
+            <button onClick={handleSaveExit}>Save & Exit</button>
+            <button onClick={handleDelete}>Delete</button>
         </>
     );
 }
